@@ -53,7 +53,7 @@ export const updateArticleSchema = {
     img: Joi.alternatives()
       .try(Joi.string().uri(), Joi.any().strip())
       .optional(),
-  }).min(1),
+  }),
 };
 
 export const deleteArticleSchema = {

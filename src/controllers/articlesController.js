@@ -56,9 +56,7 @@ export const getArticleByIdController = async (req, res) => {
   const article = await Article.findById(id).populate('ownerId', 'name');
 
   if (!article) {
-    return res.status(404).json({
-      message: 'Article not found',
-    });
+    throw createHttpError(404, 'Article not found');
   }
 
   res.status(200).json(article);
@@ -68,27 +66,20 @@ export const createArticle = async (req, res) => {
   const { title, desc, date, author } = req.body;
   const ownerId = req.user._id;
 
-  // 2. Check if Multer attached the file buffer
   if (!req.file) {
     throw createHttpError(400, 'Image is required');
   }
 
-  // 3. Upload the buffer directly to Cloudinary
   const imgUrl = await uploadToCloudinary(req.file.buffer);
 
-  // 4. Save the returned Cloudinary URL string into MongoDB
   const newArticle = await Article.create({
     title,
     desc,
-    img: imgUrl, // Save the secure Cloudinary URL here
+    img: imgUrl,
     ownerId,
     date,
     author,
   });
-
-  if (!newArticle) {
-    throw createHttpError();
-  }
 
   await User.findByIdAndUpdate(ownerId, { $inc: { articlesAmount: 1 } });
 
@@ -145,6 +136,10 @@ export const updateArticle = async (req, res) => {
       req.file.buffer,
       'harmoniq/articles',
     );
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw createHttpError(400, 'No fields to update');
   }
 
   const updatedArticle = await Article.findByIdAndUpdate(id, updateData, {

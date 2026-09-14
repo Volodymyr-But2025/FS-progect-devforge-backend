@@ -42,4 +42,7 @@ const articleSchema = new Schema(
   },
 );
 
+articleSchema.index({ ownerId: 1, createdAt: -1 });
+articleSchema.index({ rate: -1 });
+
 export const Article = model('Article', articleSchema);

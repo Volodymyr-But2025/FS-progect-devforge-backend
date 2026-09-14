@@ -101,7 +101,11 @@ export const getUsers = async (req, res) => {
   const skip = (page - 1) * perPage;
 
   const [users, totalCount] = await Promise.all([
-    User.find().sort({ articlesAmount: -1, _id: 1 }).skip(skip).limit(perPage),
+    User.find()
+      .sort({ articlesAmount: -1, _id: 1 })
+      .skip(skip)
+      .limit(perPage)
+      .select('_id username name avatar avatarUrl articlesAmount'),
     User.countDocuments(),
   ]);
 
@@ -119,7 +123,9 @@ export const getUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
   const { id } = req.params;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select(
+    '_id username name avatar avatarUrl articlesAmount',
+  );
 
   if (!user) {
     throw createHttpError(404, 'User not found');
@@ -135,7 +141,10 @@ export const updateUserAvatar = async (req, res) => {
 
   const userId = req.user._id ?? req.user.id;
 
-  const avatarUrl = await uploadToCloudinary(req.file.buffer);
+  const avatarUrl = await uploadToCloudinary(
+    req.file.buffer,
+    'harmoniq/avatars',
+  );
 
   const updatedUser = await User.findByIdAndUpdate(
     { _id: userId },

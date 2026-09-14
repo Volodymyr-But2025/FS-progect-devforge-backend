@@ -2,6 +2,9 @@
 .DS_Store
 .idea
 
+# Local multer leftovers (images go to Cloudinary)
+uploads/
+
 # Logs
 logs
 *.log
